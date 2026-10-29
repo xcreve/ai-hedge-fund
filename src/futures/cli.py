@@ -11,18 +11,25 @@ import yaml
 
 from src.futures.backtest.engine import FuturesBacktestEngine
 from src.futures.backtest.report import summary_text, write_reports
+from src.futures.backtest.walkforward import run_walk_forward, walk_forward_config_from_mapping
+from src.futures.backtest.walkforward_report import (
+    summary_text as walkforward_summary_text,
+    write_walkforward_reports,
+)
 from src.futures.data.csv_loader import load_directory
 from src.futures.data.schema import InstrumentSpec, instrument_from_mapping
 from src.futures.execution.portfolio_risk import PortfolioRiskLimits
 from src.futures.signals.cct1 import CCT1Params
 
 # Re-export for tests / discoverability
-__all__ = ["main", "build_parser", "cmd_run"]
+__all__ = ["main", "build_parser", "cmd_run", "cmd_walkforward"]
 
 PKG_DIR = Path(__file__).resolve().parent
 DEFAULT_CONFIG = PKG_DIR / "configs" / "cct1_research.yaml"
+DEFAULT_WALKFORWARD_CONFIG = PKG_DIR / "configs" / "cct1_walkforward.yaml"
 DEFAULT_INSTRUMENTS = PKG_DIR / "configs" / "instruments.yaml"
 DEFAULT_DATA = Path("data/futures/sample")
+DEFAULT_WALKFORWARD_OUT = Path("artifacts/futures/walkforward")
 
 
 def _load_yaml(path: Path) -> Dict[str, Any]:
@@ -84,11 +91,9 @@ def _load_instruments(path: Path, symbols: Optional[list[str]] = None) -> Dict[s
     return out
 
 
-def cmd_run(args: argparse.Namespace) -> int:
-    config_path = Path(args.config)
+def _prepare_market(args: argparse.Namespace, config_path: Path) -> tuple[dict, dict, CCT1Params, PortfolioRiskLimits, float, dict, dict]:
     instruments_path = Path(args.instruments)
     data_dir = Path(args.data_dir)
-
     cfg = _load_yaml(config_path)
     params, limits, equity, extras = _params_from_config(cfg)
     market = load_directory(data_dir, symbols=args.symbols)
@@ -96,6 +101,11 @@ def cmd_run(args: argparse.Namespace) -> int:
     missing = [s for s in market if s not in instruments]
     if missing:
         raise SystemExit(f"instruments.yaml missing specs for: {missing}")
+    return market, instruments, params, limits, equity, extras, cfg
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    market, instruments, params, limits, equity, extras, _cfg = _prepare_market(args, Path(args.config))
 
     engine = FuturesBacktestEngine(
         instruments=instruments,
@@ -115,6 +125,31 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_walkforward(args: argparse.Namespace) -> int:
+    market, instruments, params, limits, equity, extras, cfg = _prepare_market(args, Path(args.config))
+    wf_cfg = walk_forward_config_from_mapping(cfg)
+    if args.selection:
+        from dataclasses import replace
+
+        wf_cfg = replace(wf_cfg, selection=args.selection)
+
+    result = run_walk_forward(
+        market,
+        instruments=instruments,
+        params=params,
+        risk_limits=limits,
+        initial_equity=equity,
+        extras=extras,
+        config=wf_cfg,
+    )
+    print(walkforward_summary_text(result))
+
+    out_dir = args.out_dir or str(DEFAULT_WALKFORWARD_OUT)
+    paths = write_walkforward_reports(result, out_dir)
+    print(f"Wrote walk-forward reports to {out_dir}: {', '.join(p.name for p in paths.values())}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="futures-backtest", description="CCT-1 futures research backtest")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -126,6 +161,31 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--symbols", nargs="*", default=None, help="Optional symbol filter")
     run.add_argument("--out-dir", type=str, default=None, help="Optional report output directory")
     run.set_defaults(func=cmd_run)
+
+    wf = sub.add_parser("walkforward", help="Rolling train/test walk-forward evaluation (spec §7)")
+    wf.add_argument("--data-dir", type=str, default=str(DEFAULT_DATA), help="Directory of continuous CSVs")
+    wf.add_argument(
+        "--config",
+        type=str,
+        default=str(DEFAULT_WALKFORWARD_CONFIG),
+        help="Walk-forward + strategy YAML (default: cct1_walkforward.yaml)",
+    )
+    wf.add_argument("--instruments", type=str, default=str(DEFAULT_INSTRUMENTS), help="Instrument specs YAML")
+    wf.add_argument("--symbols", nargs="*", default=None, help="Optional symbol filter")
+    wf.add_argument(
+        "--out-dir",
+        type=str,
+        default=str(DEFAULT_WALKFORWARD_OUT),
+        help="Report output directory (default: artifacts/futures/walkforward)",
+    )
+    wf.add_argument(
+        "--selection",
+        type=str,
+        choices=["default_params", "tiny_grid"],
+        default=None,
+        help="Override walkforward.selection from YAML",
+    )
+    wf.set_defaults(func=cmd_walkforward)
     return parser
 
 
