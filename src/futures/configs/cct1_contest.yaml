@@ -1,0 +1,30 @@
+# OPTIONAL STUB — contest risk budget for research contrast only.
+# Not a live-trading recommendation. Scaffold does not require running this mode.
+mode: contest
+initial_equity: 1000000
+strategy:
+  n1: 20
+  n2: 10
+  sma_fast: 20
+  sma_slow: 50
+  atr_period: 20
+  atr_pct_lookback: 100
+  atr_pct_threshold: 40
+  adx_period: 14
+  adx_threshold: 20
+  stop_atr_mult: 2.0
+  pyramid_atr_step: 0.5
+  max_pyramid_adds: 3
+  time_stop_bars: null       # often disabled in contest-style configs
+  use_ma_exit: true
+  use_channel_exit: true
+  chandelier_atr_mult: 3.0
+risk:
+  risk_per_trade: 0.0175     # 1.75% mid of 1.5–2.0%
+  max_symbol_margin_pct: 0.40
+  max_portfolio_margin_pct: 0.80
+  max_symbols: 4
+  daily_loss_halt_pct: 0.05
+  max_drawdown_delever_pct: 0.25
+  sector_risk_mult: 1.5
+  cooldown_bars: 1
