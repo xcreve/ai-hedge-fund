@@ -38,6 +38,19 @@ poetry run futures-backtest run \
 poetry run python -m src.futures.cli run --data-dir data/futures/sample
 ```
 
+### Walk-forward (spec §7 overfit protection)
+
+Rolling train/test windows. Default selection uses research params on every OOS fold (no fitting). Optional `tiny_grid` searches a small documented grid on the train window only.
+
+```bash
+poetry run futures-backtest walkforward \
+  --data-dir data/futures/sample \
+  --config src/futures/configs/cct1_walkforward.yaml \
+  --out-dir artifacts/futures/walkforward
+```
+
+Reports: `fold_metrics.csv`, `aggregate_equity.csv`, `summary.md` under the out-dir.
+
 Instrument multipliers / margins: `src/futures/configs/instruments.yaml`.  
 Contest risk stub (optional, not default): `src/futures/configs/cct1_contest.yaml`.
 

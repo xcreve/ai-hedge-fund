@@ -1,0 +1,53 @@
+# Walk-forward overfit protection for CCT-1 (spec §7).
+# Strategy/risk defaults come from cct1_research.yaml unless overridden below.
+#
+# Default mode uses research params on every test fold (no in-sample fit).
+# Optional tiny_grid searches a small documented grid on the train window only,
+# then evaluates the chosen params on the held-out test fold.
+
+mode: research
+initial_equity: 1000000
+
+strategy:
+  n1: 20
+  n2: 10
+  sma_fast: 20
+  sma_slow: 50
+  atr_period: 20
+  atr_pct_lookback: 100
+  atr_pct_threshold: 40
+  adx_period: 14
+  adx_threshold: 20
+  stop_atr_mult: 2.0
+  pyramid_atr_step: 0.5
+  max_pyramid_adds: 3
+  time_stop_bars: 8
+  use_ma_exit: true
+  use_channel_exit: true
+  chandelier_atr_mult: 3.0
+
+risk:
+  risk_per_trade: 0.0075
+  max_symbol_margin_pct: 0.20
+  max_portfolio_margin_pct: 0.50
+  max_symbols: 6
+  daily_loss_halt_pct: 0.03
+  max_drawdown_delever_pct: 0.15
+  sector_risk_mult: 1.5
+  cooldown_bars: 1
+
+walkforward:
+  # Rolling windows on the aligned trading calendar (bar counts).
+  train_bars: 180
+  test_bars: 60
+  step_bars: 60          # advance between folds; = test_bars → non-overlapping OOS
+  warmup_bars: 120       # bars prepended for indicator state; never scored
+  # default_params | tiny_grid
+  selection: default_params
+  # Selection metric when selection=tiny_grid (train fold only).
+  selection_metric: sharpe_ratio
+  # Tiny documented grid (spec §7 search ranges, deliberately small).
+  # Used only when selection=tiny_grid. Keep ≤ ~6 combinations.
+  param_grid:
+    n1: [15, 20, 25]
+    n2: [10]
