@@ -1,0 +1,80 @@
+# Placeholder contract specs for continuous symbols (CN futures-style).
+# Replace multipliers / margins with exchange-accurate values before live research.
+instruments:
+  RB:
+    sector: ferrous
+    multiplier: 10
+    tick_size: 1
+    margin_rate: 0.10
+    commission_per_lot: 3.0
+    slippage_ticks: 1
+  AU:
+    sector: precious
+    multiplier: 1000
+    tick_size: 0.02
+    margin_rate: 0.08
+    commission_per_lot: 10.0
+    slippage_ticks: 1
+  CU:
+    sector: base_metals
+    multiplier: 5
+    tick_size: 10
+    margin_rate: 0.10
+    commission_per_lot: 6.0
+    slippage_ticks: 1
+  I:
+    sector: ferrous
+    multiplier: 100
+    tick_size: 0.5
+    margin_rate: 0.12
+    commission_per_lot: 4.0
+    slippage_ticks: 1
+  TA:
+    sector: chemicals
+    multiplier: 5
+    tick_size: 2
+    margin_rate: 0.09
+    commission_per_lot: 3.0
+    slippage_ticks: 1
+  RU:
+    sector: chemicals
+    multiplier: 10
+    tick_size: 5
+    margin_rate: 0.10
+    commission_per_lot: 3.0
+    slippage_ticks: 1
+  SC:
+    sector: energy
+    multiplier: 1000
+    tick_size: 0.1
+    margin_rate: 0.12
+    commission_per_lot: 20.0
+    slippage_ticks: 1
+  IF:
+    sector: equity_index
+    multiplier: 300
+    tick_size: 0.2
+    margin_rate: 0.12
+    commission_per_lot: 30.0
+    slippage_ticks: 1
+  IH:
+    sector: equity_index
+    multiplier: 300
+    tick_size: 0.2
+    margin_rate: 0.12
+    commission_per_lot: 30.0
+    slippage_ticks: 1
+  IC:
+    sector: equity_index
+    multiplier: 200
+    tick_size: 0.2
+    margin_rate: 0.12
+    commission_per_lot: 30.0
+    slippage_ticks: 1
+  IM:
+    sector: equity_index
+    multiplier: 200
+    tick_size: 0.2
+    margin_rate: 0.12
+    commission_per_lot: 30.0
+    slippage_ticks: 1

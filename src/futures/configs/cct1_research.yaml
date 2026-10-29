@@ -1,0 +1,29 @@
+# CCT-1 research mode (default / conservative risk budget)
+mode: research
+initial_equity: 1000000
+strategy:
+  n1: 20
+  n2: 10
+  sma_fast: 20
+  sma_slow: 50
+  atr_period: 20
+  atr_pct_lookback: 100
+  atr_pct_threshold: 40
+  adx_period: 14
+  adx_threshold: 20          # set null to disable
+  stop_atr_mult: 2.0
+  pyramid_atr_step: 0.5
+  max_pyramid_adds: 3
+  time_stop_bars: 8          # research default; set null to disable
+  use_ma_exit: true
+  use_channel_exit: true
+  chandelier_atr_mult: 3.0
+risk:
+  risk_per_trade: 0.0075     # 0.75%
+  max_symbol_margin_pct: 0.20
+  max_portfolio_margin_pct: 0.50
+  max_symbols: 6
+  daily_loss_halt_pct: 0.03
+  max_drawdown_delever_pct: 0.15
+  sector_risk_mult: 1.5
+  cooldown_bars: 1
